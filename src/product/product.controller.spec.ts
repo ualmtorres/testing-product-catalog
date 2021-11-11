@@ -4,12 +4,16 @@ import { ProductService } from './product.service';
 
 describe('ProductController', () => {
   let controller: ProductController;
+  let mockProductService = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductController],
       providers: [ProductService],
-    }).compile();
+    })
+      .overrideProvider(ProductService)
+      .useValue(mockProductService)
+      .compile();
 
     controller = module.get<ProductController>(ProductController);
   });
