@@ -11,6 +11,12 @@ describe('ProductController', () => {
         ...dto,
       };
     }),
+    update: jest.fn((id, dto) => {
+      return {
+        id: id,
+        ...dto,
+      };
+    }),
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -41,5 +47,26 @@ describe('ProductController', () => {
       id: expect.any(Number),
       ...createProductDto,
     });
+  });
+
+  it('should update a product', () => {
+    const updateProductDto = {
+      name: 'new-product',
+      brand: 'new-brand',
+      category: 'new-category',
+      price: 100,
+      url: 'http://product.com/the-new-product',
+    };
+    const productId = 2;
+
+    expect(controller.update(productId, updateProductDto)).toEqual({
+      id: productId,
+      ...updateProductDto,
+    });
+
+    expect(mockProductService.update).toHaveBeenCalledWith(
+      productId,
+      updateProductDto,
+    );
   });
 });
