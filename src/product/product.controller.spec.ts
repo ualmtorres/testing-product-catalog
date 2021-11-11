@@ -4,8 +4,14 @@ import { ProductService } from './product.service';
 
 describe('ProductController', () => {
   let controller: ProductController;
-  let mockProductService = {};
-
+  let mockProductService = {
+    create: jest.fn((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+  };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductController],
@@ -20,5 +26,20 @@ describe('ProductController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('should create a product', () => {
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    expect(controller.create(createProductDto)).toEqual({
+      id: expect.any(Number),
+      ...createProductDto,
+    });
   });
 });
