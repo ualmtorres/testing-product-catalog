@@ -1,40 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
+import { ProductServiceMock } from './product-service-mock';
 
 describe('ProductController', () => {
   let controller: ProductController;
-  let mockProductService = {
-    create: jest.fn((dto) => {
-      return {
-        id: Math.random() * (1000 - 1) + 1,
-        ...dto,
-      };
-    }),
-    update: jest.fn((id, dto) => {
-      return {
-        id: id,
-        ...dto,
-      };
-    }),
-  };
+  let service: ProductService;
+
   beforeEach(async () => {
+    const ProductServiceProvider = {
+      provide: ProductService,
+      useClass: ProductServiceMock,
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductController],
-      providers: [ProductService],
+      providers: [ProductService, ProductServiceProvider],
     })
       .overrideProvider(ProductService)
-      .useValue(mockProductService)
+      .useClass(ProductServiceMock)
       .compile();
 
     controller = module.get<ProductController>(ProductController);
+    service = module.get<ProductService>(ProductService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should create a product', () => {
+  it('should create a product', async () => {
     const createProductDto = {
       name: 'the-product',
       brand: 'the-brand',
@@ -43,13 +38,13 @@ describe('ProductController', () => {
       url: 'http://product.com/the-product',
     };
 
-    expect(controller.create(createProductDto)).toEqual({
+    expect(await controller.create(createProductDto)).toEqual({
       id: expect.any(Number),
       ...createProductDto,
     });
   });
 
-  it('should update a product', () => {
+  it('should update a product', async () => {
     const updateProductDto = {
       name: 'new-product',
       brand: 'new-brand',
@@ -59,14 +54,14 @@ describe('ProductController', () => {
     };
     const productId = 2;
 
-    expect(controller.update(productId, updateProductDto)).toEqual({
+    expect(await controller.update(productId, updateProductDto)).toEqual({
       id: productId,
       ...updateProductDto,
     });
 
-    expect(mockProductService.update).toHaveBeenCalledWith(
-      productId,
-      updateProductDto,
-    );
+    const updateSpy = jest.spyOn(service, 'update');
+    controller.update(productId, updateProductDto);
+
+    expect(updateSpy).toHaveBeenCalledWith(productId, updateProductDto);
   });
 });
