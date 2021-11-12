@@ -31,6 +31,17 @@ describe('ProductController (e2e)', () => {
     find: jest.fn().mockImplementation(() => {
       return mockProducts;
     }),
+
+    create: jest.fn().mockImplementation((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+
+    save: jest
+      .fn()
+      .mockImplementation((newProduct) => Promise.resolve(newProduct)),
   };
 
   beforeEach(async () => {
@@ -51,5 +62,30 @@ describe('ProductController (e2e)', () => {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(mockProducts);
+  });
+
+  it('/users (POST)', () => {
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    return request(app.getHttpServer())
+      .post('/product')
+      .send(createProductDto)
+      .expect(201)
+      .then((response) => {
+        expect(response.body).toEqual({
+          id: expect.any(Number),
+          ...createProductDto,
+        });
+      });
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });
