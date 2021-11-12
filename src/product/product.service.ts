@@ -11,7 +11,8 @@ export class ProductService {
     @InjectRepository(Product) private productsRepository: Repository<Product>,
   ) {}
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    return await this.productsRepository.save(createProductDto);
+    const newProduct = this.productsRepository.create(createProductDto);
+    return await this.productsRepository.save(newProduct);
   }
 
   async findAll(): Promise<Product[]> {
